@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: chicken-orders-api
+    runtime: node
+    repo: https://github.com/iamkhaled06-a11y/chicken-restaurant
+    branch: main
+    region: frankfurt
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeployTrigger: commit
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: chicken-orders-db
+          property: connectionString
+
+databases:
+  - name: chicken-orders-db
+    databaseName: chicken_orders_db
+    user: chicken_orders_db_user
+    postgresMajorVersion: "18"
+    region: frankfurt
+    plan: free
