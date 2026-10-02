@@ -106,8 +106,8 @@ app.get('/api/orders/:id/public',async(q,s)=>{
 
 app.post('/api/orders/:id/delivered',async(q,s)=>{
  try{
-  if(pool){const r=await pool.query(`UPDATE orders SET status='تم التوصيل',delivered_at=NOW() WHERE id=$1 RETURNING *`,[q.params.id]);if(!r.rows[0])return s.status(404).json({error:'غير موجود'});return s.json(row(r.rows[0]))}
-  const o=memoryOrders.find(x=>x.id===q.params.id);if(!o)return s.status(404).json({error:'غير موجود'});o.status='تم التوصيل';o.deliveredAt=new Date().toISOString();s.json(o);
+  if(pool){const r=await pool.query(`UPDATE orders SET status='مكتمل',delivered_at=NOW() WHERE id=$1 RETURNING *`,[q.params.id]);if(!r.rows[0])return s.status(404).json({error:'غير موجود'});return s.json(row(r.rows[0]))}
+  const o=memoryOrders.find(x=>x.id===q.params.id);if(!o)return s.status(404).json({error:'غير موجود'});o.status='مكتمل';o.deliveredAt=new Date().toISOString();s.json(o);
  }catch(e){s.status(500).json({error:'خطأ'})}
 });
 
