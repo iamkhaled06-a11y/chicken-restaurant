@@ -100,7 +100,7 @@ app.get('/api/orders/:id/public',async(q,s)=>{
  try{
   let o;
   if(pool){const r=await pool.query('SELECT * FROM orders WHERE id=$1',[q.params.id]);o=r.rows[0]&&row(r.rows[0])}else o=memoryOrders.find(x=>x.id===q.params.id);
-  if(!o)return s.status(404).json({error:'غير موجود'});s.json({id:o.id,item:o.item,qty:o.qty,status:o.status,rating:o.rating});
+  if(!o)return s.status(404).json({error:'غير موجود'});s.json({id:o.id,item:o.item,qty:o.qty,status:o.status,rating:o.rating,createdAt:o.created_at?new Date(o.created_at).toISOString():o.createdAt});
  }catch(e){s.status(500).json({error:'خطأ'})}
 });
 
