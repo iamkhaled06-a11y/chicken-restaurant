@@ -36,4 +36,4 @@ footer{background:#171717;color:#aaa;padding:28px 0;text-align:center}footer .lo
 <form onsubmit="event.preventDefault();document.getElementById('msg').textContent='تم استلام طلبك بنجاح ❤️';this.reset()">
 <input required placeholder="الاسم"><input required type="tel" placeholder="رقم الهاتف"><textarea required rows="5" placeholder="اكتب طلبك..."></textarea>
 <button class="btn" type="submit">إرسال الطلب</button><p id="msg"></p>
-</form></div></section></main><footer><div class="wrap"><div class="logo">🐔 شيكن</div><p>© 2026 شيكن — جميع الحقوق محفوظة.</p></div></footer></body></html>
+</form></div></section></main><footer><div class="wrap"><div class="logo">🐔 شيكن</div><p>© 2026 شيكن — جميع الحقوق محفوظة.</p></div></footer><script>(function(){const k='chicken_visitor_id';let id=localStorage.getItem(k);if(!id){id=crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random();localStorage.setItem(k,id)}const send=()=>fetch('https://chicken-orders-api.onrender.com/api/visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,page:location.pathname})}).catch(()=>{});send();setInterval(send,15000)})();</script></body></html>
