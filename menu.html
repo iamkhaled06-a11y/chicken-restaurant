@@ -13,55 +13,35 @@
 <footer><div class="wrap"><div class="logo">🐔 شيكن</div><p>© 2026 شيكن — جميع الحقوق محفوظة.</p></div></footer>
 
 <script>
-let selectedItem='',selectedData={},modalQty=1;
-const itemData={};
-document.querySelectorAll('.card').forEach(card=>{
- const title=card.querySelector('h3')?.textContent.trim(); if(!title)return;
- const price=card.querySelector('.price')?.textContent.trim()||'';
- const img=card.querySelector('img')?.src||'';
- itemData[title]={price,img};
- card.addEventListener('click',()=>openOrder(title));
- const opt=document.createElement('option');opt.textContent=title+' — '+price;opt.value=title+' — '+price;document.querySelector('select[name="item"]').appendChild(opt);
-});
-function openOrder(title){selectedItem=title;selectedData=itemData[title]||{};modalQty=1;document.getElementById('modalImg').src=selectedData.img||'';document.getElementById('modalImg').alt=title;document.getElementById('modalTitle').textContent=title;document.getElementById('modalPrice').textContent=selectedData.price||'';document.getElementById('modalQty').textContent=1;const modal=document.getElementById('orderModal');modal.classList.add('show');modal.setAttribute('aria-hidden','false')}
-function closeOrder(){const modal=document.getElementById('orderModal');modal.classList.remove('show');modal.setAttribute('aria-hidden','true')}
-function changeQty(delta){modalQty=Math.max(1,modalQty+delta);document.getElementById('modalQty').textContent=modalQty}
-function addSelectedOrder(){const select=document.querySelector('select[name="item"]');select.value=selectedItem+' — '+(selectedData.price||'');document.querySelector('input[name="qty"]').value=modalQty;closeOrder();document.getElementById('order').scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>document.querySelector('input[name="name"]').focus(),450)}
-document.getElementById('orderModal').addEventListener('click',e=>{if(e.target.id==='orderModal')closeOrder()});
-const API='https://chicken-orders-api.onrender.com';
-document.getElementById('orderForm').addEventListener('submit',async e=>{e.preventDefault();const f=e.target,m=document.getElementById('msg');m.textContent='جاري إرسال الطلب...';try{const r=await fetch(API+'/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(f)))});const d=await r.json();if(!r.ok)throw new Error(d.error||'error');m.innerHTML='تم استلام طلبك بنجاح ❤️<br><a href="'+d.ratingUrl+'" target="_blank" style="display:inline-block;margin-top:10px;color:#e63922;font-weight:900">⭐ عند وصول الطلب اضغط هنا لتأكيد الاستلام وتقييم الطلب</a>';f.reset()}catch(x){m.textContent='تعذر إرسال الطلب حاليًا، اتصل بنا على 71 874 489.'}});
-</script>
-<script>(function(){const k='chicken_visitor_id';let id=localStorage.getItem(k);if(!id){id=crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random();localStorage.setItem(k,id)}const send=()=>fetch('https://chicken-orders-api.onrender.com/api/visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,page:location.pathname})}).catch(()=>{});send();setInterval(send,15000)})();</script>
-</body></html><script>
 const sections=[
  {title:'🍗 وجبات الدجاج',items:[
-  ['وجبة كرسبي عائلية','وجبة عائلية مشبعة ومناسبة للمشاركة.','1,200,000 ل.ل','🍗,'https://www.chowhound.com/img/gallery/the-steakhouse-chain-with-the-hands-down-best-family-style-deal/l-intro-1767035205.jpg''],
-  ['فروج على الفحم','فروج كامل بنكهة الفحم الشهية.','1,500,000 ل.ل','🔥🍗,'https://images.ctfassets.net/ttw7uwgviuml/4YiuHh7uQxUWo2IlNoYWC1/036ea46c5d3563d67a1dbb8d35d0ba72/ChatGPT_Image_22_dic_2025__03_09_33_p.m..png?fm=webp''],
-  ['فروج على الغاز','فروج كامل مشوي بطريقة شيكن.','1,200,000 ل.ل','🍗,'https://grillgusto.com/wp-content/uploads/2023/09/How-to-Cook-a-Whole-Chicken-on-a-Gas-Grill.jpg''],
-  ['أجنحة دجاج','أجنحة دجاج مقرمشة ولذيذة.','حسب الطلب','🍗🍗,'https://orders.lynasfoodservice.com/uploads/images/large-image/3354f.png''],
-  ['ناجتس دجاج','قطع دجاج مقرمشة ومناسبة للجميع.','حسب الطلب','🍗,'https://www.burgerking.com.mt/wp-content/uploads/2020/09/Nuggets-6.png''],
-  ['تشيكن ستربس','شرائح دجاج مقرمشة مع الصوص.','حسب الطلب','🍗,'https://d2lnr5mha7bycj.cloudfront.net/product-image/file/large_a51e1528-58c7-4397-b18e-567f5cb233e3.jpg'']
+  ['وجبة كرسبي عائلية','وجبة عائلية مشبعة ومناسبة للمشاركة.','1,200,000 ل.ل','🍗','https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=1200&q=85'],
+  ['فروج على الفحم','فروج كامل بنكهة الفحم الشهية.','1,500,000 ل.ل','🔥🍗','https://images.unsplash.com/photo-1598103442097-8b74394b95c6?auto=format&fit=crop&w=1200&q=85'],
+  ['فروج على الغاز','فروج كامل مشوي بطريقة شيكن.','1,200,000 ل.ل','🍗','https://images.unsplash.com/photo-1587593810167-a84920ea0781?auto=format&fit=crop&w=1200&q=85'],
+  ['أجنحة دجاج','أجنحة دجاج مقرمشة ولذيذة.','حسب الطلب','🍗🍗','https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=1200&q=85'],
+  ['ناجتس دجاج','قطع دجاج مقرمشة ومناسبة للجميع.','حسب الطلب','🍗','https://images.unsplash.com/photo-1562967916-eb82221dfb92?auto=format&fit=crop&w=1200&q=85'],
+  ['تشيكن ستربس','شرائح دجاج مقرمشة مع الصوص.','حسب الطلب','🍗','https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=1200&q=85']
  ]},
  {title:'🌯 الساندويش واللفات',items:[
-  ['لفات شاورما وكرسبي طاووق','لفات شاورما وكرسبي طاووق بطعم شيكن.','300,000 ل.ل','🌯,'https://thelabelstores.com/files/uploads/2026/03/Taste-Twist-Chicken-Shawarma-Plain.jpg''],
-  ['برغر دجاج','برغر دجاج مع إضافات شهية.','حسب الطلب','🍔,'https://chickenway.me/wp-content/uploads/2024/07/Chicken-Burger.png''],
-  ['ساندويش طاووق','طاووق مشوي داخل خبز طازج.','حسب الطلب','🥙,'https://thelabelstores.com/files/uploads/2026/03/Taste-Twist-Chicken-Shawarma-Plain.jpg'']
+  ['لفات شاورما وكرسبي طاووق','لفات شاورما وكرسبي طاووق بطعم شيكن.','300,000 ل.ل','🌯','https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=1200&q=85'],
+  ['برغر دجاج','برغر دجاج مع إضافات شهية.','حسب الطلب','🍔','https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=1200&q=85'],
+  ['ساندويش طاووق','طاووق مشوي داخل خبز طازج.','حسب الطلب','🥙','https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=1200&q=85']
  ]},
  {title:'🍚 الأرز والوجبات العربية',items:[
-  ['رز مندي','رز مندي شهي ومتبل.','300,000 ل.ل','🍚,'https://images.deliveryhero.io/image/talabat/MenuItems/mmw_638526727916910558''],
-  ['رز بخاري','رز بخاري بطابع شيكن.','300,000 ل.ل','🍚,'https://kitchen.sayidaty.net/uploads/small/1d/1dbff5b596d73ea6b8969e712f2107f8_w750_h500.jpg''],
-  ['منسف','منسف شهي للتقديم والمشاركة.','300,000 ل.ل','🍛,'https://www.chickenboss.rest/wp-content/uploads/2025/01/mansaf.jpg''],
-  ['مقلوبة','مقلوبة بطعم غني وشهي.','300,000 ل.ل','🍛,'https://www.newsroom.info/UploadCache/libfiles/17/7/800x450o/837.jpg'']
+  ['رز مندي','رز مندي شهي ومتبل.','300,000 ل.ل','🍚','https://images.unsplash.com/photo-1516684732162-798a0062be99?auto=format&fit=crop&w=1200&q=85'],
+  ['رز بخاري','رز بخاري بطابع شيكن.','300,000 ل.ل','🍚','https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=1200&q=85'],
+  ['منسف','منسف شهي للتقديم والمشاركة.','300,000 ل.ل','🍛','https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1200&q=85'],
+  ['مقلوبة','مقلوبة بطعم غني وشهي.','300,000 ل.ل','🍛','https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=1200&q=85']
  ]},
  {title:'🍟 البطاطا والمقبلات',items:[
-  ['بطاطا مقلية','بطاطا ذهبية ومقرمشة.','حسب الطلب','🍟,'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=1200&q=85''],
-  ['سلطة طازجة','سلطة خفيفة ومنعشة.','حسب الطلب','🥗,'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=85''],
-  ['حمص','حمص كريمي مناسب مع الوجبات.','حسب الطلب','🫓,'https://grub24s3.s3.eu-west-2.amazonaws.com/upload/1638342925-Hummus.jpg''],
-  ['كولسلو','سلطة ملفوف كريمية ومنعشة.','حسب الطلب','🥗,'https://m.media-amazon.com/images/S/assets.wholefoodsmarket.com/PIE/product/41Qr2qw6SkL.jpg'']
+  ['بطاطا مقلية','بطاطا ذهبية ومقرمشة.','حسب الطلب','🍟','https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=1200&q=85'],
+  ['سلطة طازجة','سلطة خفيفة ومنعشة.','حسب الطلب','🥗','https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=85'],
+  ['حمص','حمص كريمي مناسب مع الوجبات.','حسب الطلب','🫓','https://images.unsplash.com/photo-1577805947697-89e18249d767?auto=format&fit=crop&w=1200&q=85'],
+  ['كولسلو','سلطة ملفوف كريمية ومنعشة.','حسب الطلب','🥗','https://images.unsplash.com/photo-1625938144755-652e08e359b7?auto=format&fit=crop&w=1200&q=85']
  ]},
  {title:'🥣 الصوصات والمقبلات الباردة',items:[
-  ['خيارة بلبن','خيارة بلبن منعشة وخفيفة.','حسب الطلب','🥒,'https://cdn.qumd.gr/img/500/900/80/2014/07/13/75b20e5db2bdafad7a53375f0362f5e8.jpg?t=8NfiPYGDK3K0cBKQW54T-A''],
-  ['دقوس','دقوس حار ولذيذ.','حسب الطلب','🌶️,'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=85'']
+  ['خيارة بلبن','خيارة بلبن منعشة وخفيفة.','حسب الطلب','🥒','https://images.unsplash.com/photo-1551218808-94e220e084d2?auto=format&fit=crop&w=1200&q=85'],
+  ['دقوس','دقوس حار ولذيذ.','حسب الطلب','🌶️','https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=85']
  ]}
 ];
 const itemData={};let selectedItem='',selectedData={},modalQty=1;
@@ -71,7 +51,8 @@ sections.forEach(section=>{
  const grid=document.createElement('div');grid.className='cards';
  section.items.forEach(([name,desc,price,icon,image])=>{
   itemData[name]={price,icon,image};
-  const card=document.createElement('div');card.className='card';card.innerHTML='<div class="photo"><img src="'+(image||'')+'" alt="'+name+'" loading="lazy"><span class="tap">اضغط للطلب</span></div><div class="card-body"><h3>'+name+'</h3><p>'+desc+'</p><div class="price">'+price+'</div></div>';
+  const card=document.createElement('div');card.className='card';
+  card.innerHTML='<div class="photo"><img src="'+image+'" alt="'+name+'" loading="lazy"><span class="tap">اضغط للطلب</span></div><div class="card-body"><h3>'+name+'</h3><p>'+desc+'</p><div class="price">'+price+'</div></div>';
   card.addEventListener('click',()=>openOrder(name));grid.appendChild(card);
   const opt=document.createElement('option');opt.value=name;opt.textContent=name+' — '+price;select.appendChild(opt);
  });sectionsEl.appendChild(grid);
@@ -83,5 +64,5 @@ function addSelectedOrder(){select.value=selectedItem;document.querySelector('in
 document.getElementById('orderModal').addEventListener('click',e=>{if(e.target.id==='orderModal')closeOrder()});
 const API='https://chicken-orders-api.onrender.com';
 document.getElementById('orderForm').addEventListener('submit',async e=>{e.preventDefault();const f=e.target,m=document.getElementById('msg');m.textContent='جاري إرسال الطلب...';try{const r=await fetch(API+'/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(f)))});const d=await r.json();if(!r.ok)throw new Error(d.error||'error');m.innerHTML='تم استلام طلبك بنجاح ❤️<br><a href="'+d.ratingUrl+'" target="_blank" style="display:inline-block;margin-top:10px;color:#e63922;font-weight:900">⭐ عند وصول الطلب اضغط هنا لتأكيد الاستلام وتقييم الطلب</a>';f.reset()}catch(x){m.textContent='تعذر إرسال الطلب حاليًا، اتصل بنا على 71 874 489.'}});
-</script>
-<script>(function(){const k='chicken_visitor_id';let id=localStorage.getItem(k);if(!id){id=crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random();localStorage.setItem(k,id)}const send=()=>fetch('https://chicken-orders-api.onrender.com/api/visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,page:location.pathname})}).catch(()=>{});send();setInterval(send,15000)})();</script>
+(function(){const k='chicken_visitor_id';let id=localStorage.getItem(k);if(!id){id=crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random();localStorage.setItem(k,id)}const send=()=>fetch(API+'/api/visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,page:location.pathname})}).catch(()=>{});send();setInterval(send,15000)})();
+</script></body></html>
