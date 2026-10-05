@@ -7,7 +7,8 @@ app.use(express.json({limit:'50kb'}));
 const PRICES={'وجبة كرسبي عائلية':1200000,'لفات شاورما وكرسبي طاووق':300000,'فروج على الغاز':1200000,'فروج على الفحم':1500000,'رز مندي':300000,'رز بخاري':300000,'منسف':300000,'مقلوبة':300000,'خيارة بلبن':0,'دقوس':0};
 const ADMIN_PASSWORD='1234';
 const DATABASE_URL=process.env.DATABASE_URL||'';
-const pool=DATABASE_URL?new Pool({connectionString:DATABASE_URL,max:10,idleTimeoutMillis:30000,connectionTimeoutMillis:10000}):null;
+if(!DATABASE_URL){console.error('DATABASE_URL is required. Orders will never use temporary memory storage.');process.exit(1)}
+const pool=new Pool({connectionString:DATABASE_URL,max:10,idleTimeoutMillis:30000,connectionTimeoutMillis:10000});
 const memoryOrders=[],visitors=new Map();
 let uniqueVisitors=0,pageViews=0;
 
@@ -21,7 +22,6 @@ function cleanOnline(){const now=Date.now();for(const[k,v]of visitors)if(now-v.l
 function orderRevenue(o){return Number(o.totalPrice??((PRICES[o.item]||0)*Number(o.qty||0)))}
 
 async function initDb(){
- if(!pool)return;
  await pool.query(`CREATE TABLE IF NOT EXISTS orders(
    id TEXT PRIMARY KEY,name TEXT NOT NULL,phone TEXT NOT NULL,address TEXT NOT NULL,item TEXT NOT NULL,
    qty INTEGER NOT NULL,notes TEXT DEFAULT '',created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -56,13 +56,13 @@ app.post('/api/visit',async(q,s)=>{
 app.get('/api/stats',async(q,s)=>{
  if(!authorized(q))return s.status(401).json({error:'غير مصرح'});
  try{
-  if(!pool){
+  if(false){
    cleanOnline();const days={},items={};let revenue=0,completed=0,sum=0,count=0;
    memoryOrders.forEach(o=>{const day=new Date(o.createdAt).toLocaleDateString('en-CA',{timeZone:'Asia/Beirut'}),amount=orderRevenue(o);revenue+=amount;if(o.status==='مكتمل'||o.status==='تم التوصيل')completed++;if(o.rating){sum+=Number(o.rating);count++}if(!days[day])days[day]={date:day,orders:0,revenue:0,items:{},completed:0};days[day].orders++;days[day].revenue+=amount;if(o.status==='مكتمل'||o.status==='تم التوصيل')days[day].completed++;days[day].items[o.item]=(days[day].items[o.item]||0)+Number(o.qty||0);items[o.item]=(items[o.item]||0)+Number(o.qty||0)});
    return s.json({uniqueVisitors,online:visitors.size,pageViews,orders:memoryOrders.length,completedOrders:completed,totalRevenue:revenue,averageRating:count?Math.round(sum/count*10)/10:0,ratingCount:count,daily:Object.values(days).sort((a,b)=>b.date.localeCompare(a.date)),items,prices:PRICES});
   }
   const [summary,days,items,vis]=await Promise.all([
-   pool.query(`SELECT COUNT(*)::int AS orders,COUNT(*) FILTER(WHERE status IN ('مكتمل','تم التوصيل'))::int AS completed,
+   pool.query(`SELECT COUNT(*)::int AS orders,COUNT(*) FILTER(WHERE status IN ('مكتمل','تم التوصيل','مؤرشف'))::int AS completed,
    COALESCE(SUM(total_price),0)::bigint AS revenue,COALESCE(AVG(rating) FILTER(WHERE rating IS NOT NULL),0)::numeric(10,1) AS avg_rating,
    COUNT(rating)::int AS rating_count FROM orders`),
    pool.query(`SELECT to_char(created_at AT TIME ZONE 'Asia/Beirut','YYYY-MM-DD') AS date,COUNT(*)::int AS orders,
@@ -82,7 +82,7 @@ app.post('/api/orders',async(q,s)=>{
  try{
   const{name,phone,address,item,qty,notes}=q.body||{};if(!name||!phone||!address||!item||!qty)return s.status(400).json({error:'البيانات ناقصة'});
   const id=crypto.randomUUID(),n=Number(qty),unit=PRICES[item]||0,total=unit*n;
-  if(pool)await pool.query(`INSERT INTO orders(id,name,phone,address,item,qty,notes,status,unit_price,total_price) VALUES($1,$2,$3,$4,$5,$6,$7,'جديد',$8,$9)`,[id,name,phone,address,item,n,notes||'',unit,total]);
+  await pool.query(`INSERT INTO orders(id,name,phone,address,item,qty,notes,status,unit_price,total_price) VALUES($1,$2,$3,$4,$5,$6,$7,'جديد',$8,$9)`,[id,name,phone,address,item,n,notes||'',unit,total]);
   else memoryOrders.unshift({id,name,phone,address,item,qty:n,notes:notes||'',createdAt:new Date().toISOString(),status:'جديد',unitPrice:unit,totalPrice:total,rating:null,ratingComment:''});
   s.status(201).json({ok:true,id,ratingUrl:'https://chicken-orders-api.onrender.com/rate?id='+encodeURIComponent(id)});
  }catch(e){console.error(e);s.status(500).json({error:'تعذر حفظ الطلب'})}
@@ -106,7 +106,7 @@ app.get('/api/orders/:id/public',async(q,s)=>{
 
 app.post('/api/orders/:id/delivered',async(q,s)=>{
  try{
-  if(pool){const r=await pool.query(`UPDATE orders SET status='مكتمل',delivered_at=NOW() WHERE id=$1 RETURNING *`,[q.params.id]);if(!r.rows[0])return s.status(404).json({error:'غير موجود'});return s.json(row(r.rows[0]))}
+  if(pool){const r=await pool.query(`UPDATE orders SET status='مؤرشف',delivered_at=COALESCE(delivered_at,NOW()) WHERE id=$1 RETURNING *`,[q.params.id]);if(!r.rows[0])return s.status(404).json({error:'غير موجود'});return s.json(row(r.rows[0]))}
   const o=memoryOrders.find(x=>x.id===q.params.id);if(!o)return s.status(404).json({error:'غير موجود'});o.status='مكتمل';o.deliveredAt=new Date().toISOString();s.json(o);
  }catch(e){s.status(500).json({error:'خطأ'})}
 });
@@ -115,7 +115,7 @@ app.post('/api/orders/:id/rating',async(q,s)=>{
  try{
   const rating=Number(q.body.rating),comment=String(q.body.comment||'').slice(0,500);
   if(!Number.isInteger(rating)||rating<1||rating>5)return s.status(400).json({error:'التقييم من 1 إلى 5'});
-  if(pool){const r=await pool.query(`UPDATE orders SET rating=$1,rating_comment=$2,rated_at=NOW(),status='مكتمل',delivered_at=COALESCE(delivered_at,NOW()) WHERE id=$3 RETURNING id`,[rating,comment,q.params.id]);if(!r.rows[0])return s.status(404).json({error:'غير موجود'});return s.json({ok:true})}
+  if(pool){const r=await pool.query(`UPDATE orders SET rating=$1,rating_comment=$2,rated_at=NOW(),status='مؤرشف',delivered_at=COALESCE(delivered_at,NOW()) WHERE id=$3 RETURNING id`,[rating,comment,q.params.id]);if(!r.rows[0])return s.status(404).json({error:'غير موجود'});return s.json({ok:true})}
   const o=memoryOrders.find(x=>x.id===q.params.id);if(!o)return s.status(404).json({error:'غير موجود'});o.rating=rating;o.ratingComment=comment;o.ratedAt=new Date().toISOString();o.status='مكتمل';s.json({ok:true});
  }catch(e){s.status(500).json({error:'خطأ في حفظ التقييم'})}
 });
